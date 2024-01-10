@@ -41,18 +41,24 @@ def parse(soup):
 
     return productslist
 
+games = []
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html', search_term="")
+    if request.method == 'POST':
+        search_term = request.form['search_term']
+        ebay_data = get_data(search_term)
+        products_list = parse(ebay_data)
 
-@app.route('/result', methods=['POST'])
-def result():
-    search_term = request.form['search_term']
-    ebay_data = get_data(search_term)
-    products_list = parse(ebay_data)
-    average_price = calculate_average_price(products_list)
-    return render_template('result.html', products_list=products_list, search_term=search_term, average_price=average_price)
+        # Calculate average price
+        average_price = calculate_average_price(products_list)
+
+        # Add the game to the games list
+        game = {'name': search_term, 'average_price': average_price}
+        games.append(game)
+
+    # Render the updated index page
+    return render_template('index.html', search_term="", games=games)
 
 def calculate_average_price(products_list):
     if not products_list:

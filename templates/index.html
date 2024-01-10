@@ -7,10 +7,19 @@
 </head>
 <body>
     <h1>Welcome to eBay Price Scraper</h1>
-    <form action="/result" method="post">
+    <form action="/" method="post">
         <label for="search_term">Enter a Product on eBay:</label>
         <input type="text" name="search_term" required value="{{ search_term }}">
         <button type="submit">Search</button>
     </form>
+
+    {% if games %}
+        <div>
+            <h2>Searched Games:</h2>
+            {% for game in games %}
+                <p>{{ game.name }} - Average Price: ${{ "{:.2f}".format(game.average_price) }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
 </body>
 </html>
