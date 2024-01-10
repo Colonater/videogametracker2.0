@@ -20,6 +20,11 @@
                 <p>{{ game.name }} - Average Price: ${{ "{:.2f}".format(game.average_price) }}</p>
             {% endfor %}
         </div>
+
+        <div>
+            <h2>Total Price of Collection:</h2>
+            <p>${{ "{:.2f}".format(total_price) }}</p>
+        </div>
     {% endif %}
 </body>
 </html>

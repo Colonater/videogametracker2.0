@@ -57,6 +57,11 @@ def index():
         game = {'name': search_term, 'average_price': average_price}
         games.append(game)
 
+        # Calculate total price
+        total_price = calculate_total_price(games)
+
+        return render_template('index.html', search_term=search_term, games=games, total_price=total_price)
+
     # Render the updated index page
     return render_template('index.html', search_term="", games=games)
 
@@ -66,6 +71,10 @@ def calculate_average_price(products_list):
     total_price = sum(product['soldprice'] for product in products_list)
     average_price = total_price / len(products_list)
     return average_price
+
+def calculate_total_price(games):
+    total_price = sum(game['average_price'] for game in games)
+    return total_price
 
 if __name__ == '__main__':
     app.run(debug=True)
