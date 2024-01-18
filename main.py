@@ -3,9 +3,12 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import sys
+from tinydb import TinyDB, Query
+
 
 app = Flask(__name__)
 
+db = TinyDB('db.json')
 
 def get_data(searchterm):
     url = f'https://www.ebay.ca/sch/i.html?_from=R40&_nkw={searchterm}&_sop=12&_sacat=0&LH_PrefLoc=3&LH_Sold=1&LH_Complete=1&rt=nc&LH_BIN=1'
@@ -54,10 +57,16 @@ def parse(soup):
 
 games = []
 
+from tinydb import TinyDB, Query
+
+db = TinyDB('db.json')
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global games
     total_price = 0
+    collection_name = None
+
     if request.method == 'POST':
         action = request.form.get('action')
 
@@ -78,12 +87,23 @@ def index():
             for index in sorted(selected_games, reverse=True):
                 if 0 <= index < len(games):
                     del games[index]
-    
+
+        elif action == 'save':
+            collection_name = request.form.get('collection_name')
+            db.insert({'name': collection_name, 'games': games})
+
+        elif action == 'load':
+            collection_name = request.form.get('collection_name')
+            Collection = Query()
+            collection = db.search(Collection.name == collection_name)
+            if collection:
+                games = collection[0]['games']
+
     # Calculate total price
     for game in games:
         total_price += game['average_price']
-    
-    return render_template('index.html', games=games, total_price=total_price)
+
+    return render_template('index.html', games=games, total_price=total_price, collection_name=collection_name)
 
 def calculate_average_price(products_list):
     if not products_list:
