@@ -37,6 +37,18 @@
         <div>
             <h2>Total Price: {{ '%.2f'|format(total_price) }}</h2>
         </div>
+        <!-- Add these where you want the save and load buttons to appear -->
+<form method="POST">
+    <input type="text" name="collection_name" placeholder="Enter collection name">
+    <input type="hidden" name="action" value="save">
+    <input type="submit" value="Save Collection">
+</form>
+
+<form method="POST">
+    <input type="text" name="collection_name" placeholder="Enter collection name">
+    <input type="hidden" name="action" value="load">
+    <input type="submit" value="Load Collection">
+</form>
     </div>
 </body>
 </html>
