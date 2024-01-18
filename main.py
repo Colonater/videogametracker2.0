@@ -2,14 +2,25 @@ from flask import Flask, render_template, request
 import requests
 from bs4 import BeautifulSoup
 import re
+import sys
 
 app = Flask(__name__)
+
 
 def get_data(searchterm):
     url = f'https://www.ebay.ca/sch/i.html?_from=R40&_nkw={searchterm}&_sop=12&_sacat=0&LH_PrefLoc=3&LH_Sold=1&LH_Complete=1&rt=nc&LH_BIN=1'
     r = requests.get(url)
+
+    # Print whether the request was successful or not
+    if r.status_code == 200:
+        print(f"Search for '{searchterm}' successful!")
+    else:
+        print(f"Search for '{searchterm}' failed. Status Code: {r.status_code}")
+
     soup = BeautifulSoup(r.text, 'html.parser')
     return soup
+
+
 
 def parse(soup):
     productslist = []
@@ -45,25 +56,33 @@ games = []
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    global games
     if request.method == 'POST':
-        search_term = request.form['search_term']
-        ebay_data = get_data(search_term)
-        products_list = parse(ebay_data)
+        action = request.form.get('action')
 
-        # Calculate average price
-        average_price = calculate_average_price(products_list)
+        if action == 'search':
+            search_term = request.form.get('search_term')
+            ebay_data = get_data(search_term)
+            products_list = parse(ebay_data)
 
-        # Add the game to the games list
-        game = {'name': search_term, 'average_price': average_price}
-        games.append(game)
+            # Calculate average price
+            average_price = calculate_average_price(products_list)
 
-        # Calculate total price
-        total_price = calculate_total_price(games)
+            # Add the game to the games list
+            game = {'name': search_term, 'average_price': average_price}
+            games.append(game)
 
-        return render_template('index.html', search_term=search_term, games=games, total_price=total_price)
+        elif action == 'delete':
+            selected_games = request.form.getlist('delete_games[]')
+            selected_games = [int(index) for index in selected_games]
 
-    # Render the updated index page
-    return render_template('index.html', search_term="", games=games)
+            # Remove games in reverse order to avoid index errors
+            for index in sorted(selected_games, reverse=True):
+                if 0 <= index < len(games):
+                    del games[index]
+
+    total_price = calculate_total_price(games)
+    return render_template('index.html', search_term="", games=games, total_price=total_price)
 
 def calculate_average_price(products_list):
     if not products_list:

@@ -16,15 +16,20 @@
     {% if games %}
         <div>
             <h2>Searched Games:</h2>
-            {% for game in games %}
-                <p>{{ game.name }} - Average Price: ${{ "{:.2f}".format(game.average_price) }}</p>
-            {% endfor %}
+            <form action="/" method="post">
+                {% for game in games %}
+                    <div>
+                        <input type="checkbox" name="delete_games[]" value="{{ loop.index0 }}">
+                        <p>{{ game.name }} - Average Price: ${{ "{:.2f}".format(game.average_price) }}</p>
+                    </div>
+                {% endfor %}
+                <button type="submit" name="action" value="delete">Delete Selected</button>
+            </form>
         </div>
+    {% endif %}
 
-        <div>
-            <h2>Total Price of Collection:</h2>
-            <p>${{ "{:.2f}".format(total_price) }}</p>
-        </div>
+    {% if total_price %}
+        <p>Total Price of Collection: ${{ "{:.2f}".format(total_price) }}</p>
     {% endif %}
 </body>
 </html>
