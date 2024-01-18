@@ -1,35 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>eBay Price Scraper</title>
+    <title>Hickey's Video Game Tracker</title>
+    <style>
+        body {
+            background-color: purple;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to eBay Price Scraper</h1>
-    <form action="/" method="post">
-        <label for="search_term">Enter a Product on eBay:</label>
-        <input type="text" name="search_term" required value="{{ search_term }}">
-        <button type="submit">Search</button>
-    </form>
+    <h1>Hickey's Video Game Tracker</h1>
+    <div class="container">
+        <form method="POST">
+            <input type="text" name="search_term" placeholder="Search for a game">
+            <input type="hidden" name="action" value="search">
+            <input type="submit" value="Search">
+        </form>
 
-    {% if games %}
+        <form method="POST">
+            <input type="hidden" name="action" value="delete">
+            {% for game in games %}
+                <div>
+                    <input type="checkbox" name="delete_games[]" value="{{ loop.index0 }}">
+                    <span>{{ game.name }}: {{ '%.2f'|format(game.average_price) }}</span>
+                </div>
+            {% endfor %}
+            <input type="submit" value="Delete Selected">
+        </form>
         <div>
-            <h2>Searched Games:</h2>
-            <form action="/" method="post">
-                {% for game in games %}
-                    <div>
-                        <input type="checkbox" name="delete_games[]" value="{{ loop.index0 }}">
-                        <p>{{ game.name }} - Average Price: ${{ "{:.2f}".format(game.average_price) }}</p>
-                    </div>
-                {% endfor %}
-                <button type="submit" name="action" value="delete">Delete Selected</button>
-            </form>
+            <h2>Total Price: {{ '%.2f'|format(total_price) }}</h2>
         </div>
-    {% endif %}
-
-    {% if total_price %}
-        <p>Total Price of Collection: ${{ "{:.2f}".format(total_price) }}</p>
-    {% endif %}
+    </div>
 </body>
 </html>

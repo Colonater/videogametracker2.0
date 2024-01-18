@@ -21,52 +21,50 @@ def get_data(searchterm):
     return soup
 
 
-
 def parse(soup):
     productslist = []
+    total_price = 0
     results = soup.find_all('div', {'class': "s-item__info"})[:50]
     for item in results:
         try:
             title_element = item.find('h3', {'class': 's-item__title'})
             title = title_element.text if title_element else 'N/A'
-        except:
-            title = 'N/A'
-        try:
-            solddate = item.find('span', {'class': 's-item__title--tagblock'}).find('span').text
-        except:
-            solddate = 'N/A'
-        try:
-            bids = item.find('span', {'class': 's-item__bids'}).text
-        except:
-            bids = 'N/A'
-        soldprice_str = item.find('span', {'class': 's-item__price'}).text.replace('C', '').replace('$', '').strip()
-        soldprice = float(re.findall(r'\d+\.\d+', soldprice_str)[0])
-        products = {
-            'title': title,
-            'soldprice': soldprice,
-            'solddate': solddate,
-            'bids': bids,
-            'link': item.find('a', {"class": 's-item__link'})['href'],
-        }
-        productslist.append(products)
-
-    return productslist
+            
+            solddate_element = item.find('span', {'class': 's-item__title--tagblock'})
+            solddate = solddate_element.find('span').text if solddate_element else 'N/A'
+            
+            bids_element = item.find('span', {'class': 's-item__bids'})
+            bids = bids_element.text if bids_element else 'N/A'
+            
+            soldprice_str = item.find('span', {'class': 's-item__price'}).text.replace('C', '').replace('$', '').strip()
+            soldprice = float(re.findall(r'\d+\.\d+', soldprice_str)[0])
+            total_price += soldprice
+            
+            productslist.append({
+                'title': title,
+                'soldprice': soldprice,
+                'solddate': solddate,
+                'bids': bids
+            })
+        except Exception as e:
+            print(f"Error parsing item: {e}")
+    
+    average_price = total_price / len(productslist) if productslist else 0
+    return productslist, average_price
 
 games = []
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     global games
+    total_price = 0
     if request.method == 'POST':
         action = request.form.get('action')
 
         if action == 'search':
             search_term = request.form.get('search_term')
             ebay_data = get_data(search_term)
-            products_list = parse(ebay_data)
-
-            # Calculate average price
-            average_price = calculate_average_price(products_list)
+            products_list, average_price = parse(ebay_data)
 
             # Add the game to the games list
             game = {'name': search_term, 'average_price': average_price}
@@ -80,9 +78,12 @@ def index():
             for index in sorted(selected_games, reverse=True):
                 if 0 <= index < len(games):
                     del games[index]
-
-    total_price = calculate_total_price(games)
-    return render_template('index.html', search_term="", games=games, total_price=total_price)
+    
+    # Calculate total price
+    for game in games:
+        total_price += game['average_price']
+    
+    return render_template('index.html', games=games, total_price=total_price)
 
 def calculate_average_price(products_list):
     if not products_list:
