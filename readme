@@ -1,0 +1,24 @@
+
+sudo apt update
+sudo apt install python3-pip
+sudo apt install python3-venv
+
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+ex 
+
+Flask==2.0.2
+requests==2.26.0
+beautifulsoup4==4.10.0
+tinydb==4.5.2
+
+sudo apt update
+sudo apt install python3-pip
+sudo apt install python3-venv
+
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
